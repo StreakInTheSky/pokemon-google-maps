@@ -1,11 +1,30 @@
 /* Always set the map height explicitly to define the size of the div
 * element that contains the map. */
-  #map {
-    height: 100%;
-  }
-  /* Optional: Makes the sample page fill the window. */
-  html, body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-  }
+#map {
+  height: 100%;
+}
+/* Optional: Makes the sample page fill the window. */
+html, body, main {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#start-screen {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  background-color: rgba(0, 81, 197, 1);
+  width: 400px;
+  height: 400px;
+  z-index: 10;
+  margin-left: -200px;
+  margin-top: -200px;
+  text-align: center;
+  font-family: helvetica;
+  color: #FFF;
+}
+
+.hidden {
+  display: none;
+}
