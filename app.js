@@ -9,23 +9,22 @@ var locationState = {
 var pokemonState = {
 	currentWild: {
 		1: {
-			lat: locationState.currentLocation.lat + 0.0004,
-			lng: locationState.currentLocation.lng + 0.0004,
+			lat: locationState.currentLocation.lat + 0.000031,
+			lng: locationState.currentLocation.lng + 0.00006,
 		},
 		4: {
-			lat: locationState.currentLocation.lat + 0.0004,
-			lng: locationState.currentLocation.lng + 0.0004,
+			lat: locationState.currentLocation.lat + 0.00004,
+			lng: locationState.currentLocation.lng,
 		},
 		7: {
-			lat: locationState.currentLocation.lat + 0.0004,
-			lng: locationState.currentLocation.lng + 0.0004,
+			lat: locationState.currentLocation.lat + 0.000038,
+			lng: locationState.currentLocation.lng - 0.00006,
 		},
 	},
 	pokedex: {},
 }
 
 var map;
-
 
 function getUserLocation() {
   $('#current-location-button').click(function() {
@@ -42,6 +41,7 @@ function getUserLocation() {
         initMap();
       })
       $('#start-screen').toggleClass('hidden');
+      intervalOfSpawning();
     }
   })
 }
@@ -66,76 +66,129 @@ function spawnPokemon() {
 		lat: locLat,
 		lng: locLng
 	};
+  showMarkers(map);
+}
+
+function intervalOfSpawning() {
+  setInterval(spawnPokemon, Math.random() * ((30 * 1000) - (1 * 1000)));
+}
+
+function removePokemon() {
+  if (pokemonState.currentWild.length > 10) {
+    delete pokemonState.currentWild.indexOf
+  }
+}
+
+function neededInfo(data) {
+  var pokemon = {
+    name: data.name,
+    types: data.types,
+    height: data.height,
+    weight: (data.weight / 10).toFixed(1) + 'kg',
+    sprite: data.sprites.front_default,
+  }
+  return pokemon;
+}
+
+function getPokemonInfo(number, callback) {
+  var pokeApiBase = 'http://pokeapi.co/api/v2/pokemon/';
+  $.getJSON(pokeApiBase + number, callback);
 }
 
 function showMarkers(map) {
-  // Show markers on map
-  var iconBase = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/';
-
-  function getPokemonData(type) {
-    if (type === 'current') {
-      return { icon: 'https://maps.google.com/mapfiles/kml/shapes/library_maps.png' };
-    }
-    var number = Math.floor(Math.random() * (721 - 1)) + 1;
-    var sprite = iconBase + number + '.png';
-    var tooltip = getPokemonInfo(number, neededInfo);
-    return { icon: sprite, tooltip: tooltip };
-  }
-
-  function neededInfo(data) {
-    var pokemon = {
-      name: data.name,
-      types: data.types,
-      height: data.height,
-      weight: (data.weight/10).toFixed(1) + 'kg',
-    }
-  }
-
-  function getPokemonInfo(number, callback) {
-    var pokeApiBase = 'http://pokeapi.co/api/v2/pokemon/';
-    $.getJSON(pokeApiBase + number, callback);
+  var userMarker = {
+    position: new google.maps.LatLng(locationState.currentLocation.lat, locationState.currentLocation.lng),
+    icon: 'https://maps.google.com/mapfiles/kml/shapes/library_maps.png'
   }
 
   function addMarker(feature) {
     var marker = new google.maps.Marker({
       position: feature.position,
-      icon: getPokemonData(feature.type).icon,
-      tooltip: getPokemonData(feature.type).tooltip,
+      icon: feature.icon,
       map: map
     });
   }
 
+  addMarker(userMarker);
 
-  var features = [{
-    position: new google.maps.LatLng(randomPokeGenX(), randomPokeGenY()),
-    type: 'pokemon'
-  }, {
-    position: new google.maps.LatLng(randomPokeGenX(), randomPokeGenY()),
-    type: 'pokemon'
-  }, {
-    position: new google.maps.LatLng(randomPokeGenX(), randomPokeGenY()),
-    type: 'pokemon'
-  }, {
-    position: new google.maps.LatLng(randomPokeGenX(), randomPokeGenY()),
-    type: 'pokemon'
-  }, {
-    position: new google.maps.LatLng(randomPokeGenX(), randomPokeGenY()),
-    type: 'pokemon'
-  }, {
-    position: new google.maps.LatLng(randomPokeGenX(), randomPokeGenY()),
-    type: 'pokemon'
-  }, {
-    position: new google.maps.LatLng(randomPokeGenX(), randomPokeGenY()),
-    type: 'pokemon'
-  }, {
-    position: new google.maps.LatLng(locationState.currentLocation.lat, locationState.currentLocation.lng),
-    type: 'current'
-  }];
-
-  for (var i = 0, feature; feature = features[i]; i++) {
-    addMarker(feature);
-  }
+  $.each(pokemonState.currentWild, function(key) {
+    var pokeIconBase = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/';
+    var pokemonMarker = {
+      position: new google.maps.LatLng(this.lat, this.lng),
+      icon: pokeIconBase + key + '.png'
+    }
+    addMarker(pokemonMarker);
+  })
 }
+
+// function showMarkers(map) {
+//   // Show markers on map
+//   var iconBase = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/';
+
+//   function getPokemonData(type) {
+//     if (type === 'current') {
+//       return { icon: 'https://maps.google.com/mapfiles/kml/shapes/library_maps.png' };
+//     }
+//     var number = Math.floor(Math.random() * (721 - 1)) + 1;
+//     var sprite = iconBase + number + '.png';
+//     var tooltip = getPokemonInfo(number, neededInfo);
+//     return { icon: sprite, tooltip: tooltip };
+//   }
+
+//   function neededInfo(data) {
+//     var pokemon = {
+//       name: data.name,
+//       types: data.types,
+//       height: data.height,
+//       weight: (data.weight/10).toFixed(1) + 'kg',
+//     }
+//   }
+
+//   function getPokemonInfo(number, callback) {
+//     var pokeApiBase = 'http://pokeapi.co/api/v2/pokemon/';
+//     $.getJSON(pokeApiBase + number, callback);
+//   }
+
+//   function addMarker(feature) {
+//     var marker = new google.maps.Marker({
+//       position: feature.position,
+//       icon: getPokemonData(feature.type).icon,
+//       tooltip: getPokemonData(feature.type).tooltip,
+//       map: map
+//     });
+//   }
+
+
+//   var features = [{
+//     position: new google.maps.LatLng(randomPokeGenX(), randomPokeGenY()),
+//     type: 'pokemon'
+//   }, {
+//     position: new google.maps.LatLng(randomPokeGenX(), randomPokeGenY()),
+//     type: 'pokemon'
+//   }, {
+//     position: new google.maps.LatLng(randomPokeGenX(), randomPokeGenY()),
+//     type: 'pokemon'
+//   }, {
+//     position: new google.maps.LatLng(randomPokeGenX(), randomPokeGenY()),
+//     type: 'pokemon'
+//   }, {
+//     position: new google.maps.LatLng(randomPokeGenX(), randomPokeGenY()),
+//     type: 'pokemon'
+//   }, {
+//     position: new google.maps.LatLng(randomPokeGenX(), randomPokeGenY()),
+//     type: 'pokemon'
+//   }, {
+//     position: new google.maps.LatLng(randomPokeGenX(), randomPokeGenY()),
+//     type: 'pokemon'
+//   }, {
+//     position: new google.maps.LatLng(locationState.currentLocation.lat, locationState.currentLocation.lng),
+//     type: 'current'
+//   }];
+
+//   for (var i = 0, feature; feature = features[i]; i++) {
+//     addMarker(feature);
+//   }
+// }
 
 function initMap() {
   map = new google.maps.Map(document.getElementById('map'), {
@@ -146,7 +199,7 @@ function initMap() {
 
   google.maps.event.addListener(map, 'bounds_changed', function() {
     locationState.currentBounds = map.getBounds().toJSON();
-    // showMarkers(map);
+    showMarkers(map);
   });
 	
 }
