@@ -7,18 +7,6 @@ var state = {
 	pokedex: {}
 }
 
-// var settings = {
-// 	limitBox: {
-// 		topLeft: {
-// 			x: 34.605372, 
-// 			y: 135.821255
-// 		},
-// 		bottomRight: {
-// 			x: 34.590367, 
-// 			y: 135.843629
-// 		}
-// 	}
-// }
 var settings = {
 	limitBox: {
 		topLeft: {
@@ -67,11 +55,11 @@ $('#current-location-button').click(function() {
 					}
 				}
 			};
-
+    initMap();
     });
 	}
   $('#start-screen').toggleClass('hidden');
-  initMap();
+  
 });
 
 function initMap() {
@@ -83,34 +71,38 @@ function initMap() {
 
   // Show markers on map
   var iconBase = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/';
-  var icons = {
-    // pokemon: {
-    //   icon: iconBase + 'parking_lot_maps.png'
-    // },
-    // current: {
-    //   icon: iconBase + 'library_maps.png'
-    // },
-  };
 
-  function getPokemonIcon(type) {
+  function getPokemonData(type) {
   	if (type === 'current') {
   		return { icon: 'https://maps.google.com/mapfiles/kml/shapes/library_maps.png' };
   	}
   	var number = Math.floor(Math.random() * (721 - 1)) + 1;
   	var sprite = iconBase + number + '.png';
-  	var tooltip = getPokemonData(number)
+  	var tooltip = getPokemonInfo(number, neededInfo);
   	return { icon: sprite, tooltip: tooltip };
   }
 
-  function getPokemonData(number) {
-  	return //get crapola
+  function neededInfo(data) {
+    var pokemon = {
+      name: data.name,
+      types: data.types,
+      species: data.species.name,
+      height: data.height,
+      weight: (data.weight/10).toFixed(1) + 'kg',
+    }
+    console.log(pokemon);
+  }
+
+  function getPokemonInfo(number, callback) {
+    var pokeApiBase = 'http://pokeapi.co/api/v2/pokemon/';
+    $.getJSON(pokeApiBase + number, callback);
   }
 
   function addMarker(feature) {
     var marker = new google.maps.Marker({
       position: feature.position,
-      icon: getPokemonIcon(feature.type).icon,
-     	tooltip: getPokemonIcon(feature.type).tooltip,
+      icon: getPokemonData(feature.type).icon,
+     	tooltip: getPokemonData(feature.type).tooltip,
       map: map
     });
   }
