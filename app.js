@@ -1,47 +1,38 @@
-var state = {
+var locationState = {
 	currentLocation: {
 		lat: 34.598467, 
 		lng: 135.833055
 	},
-	currentWild: {},
-	pokedex: {}
+	currentBounds: {},
 }
 
-// var settings = {
-// 	limitBox: {
-// 		topLeft: {
-// 			x: 34.605372, 
-// 			y: 135.821255
-// 		},
-// 		bottomRight: {
-// 			x: 34.590367, 
-// 			y: 135.843629
-// 		}
-// 	}
-// }
-var settings = {
-	limitBox: {
-		topLeft: {
-			x: state.currentLocation.lat + 0.00053, 
-			y: state.currentLocation.lng - 0.00095
+var pokemonState = {
+	currentWild: {
+		1: {
+			lat: locationState.currentLocation.lat + 0.0004,
+			lng: locationState.currentLocation.lng + 0.0004,
 		},
-		bottomRight: {
-			x: state.currentLocation.lat - 0.00053, 
-			y: state.currentLocation.lng + 0.00095
-		}
-	}
+		4: {
+			lat: locationState.currentLocation.lat + 0.0004,
+			lng: locationState.currentLocation.lng + 0.0004,
+		},
+		7: {
+			lat: locationState.currentLocation.lat + 0.0004,
+			lng: locationState.currentLocation.lng + 0.0004,
+		},
+	},
+	pokedex: {},
 }
 
 var map;
 
-
 //randomly generate location of pokemon within window
-function randomPokeGenX() {
-	return (Math.random() * (settings.limitBox.topLeft.x - settings.limitBox.bottomRight.x) + settings.limitBox.bottomRight.x).toFixed(6);
+function randomPokeGenY() {
+	return (Math.random() * (locationState.currentBounds.east - locationState.currentBounds.west) + locationState.currentBounds.west).toFixed(6);
 }
 
-function randomPokeGenY() {
-	return (Math.random() * (settings.limitBox.topLeft.y - settings.limitBox.bottomRight.y) + settings.limitBox.bottomRight.y).toFixed(6);
+function randomPokeGenX() {
+	return (Math.random() * (locationState.currentBounds.north - locationState.currentBounds.south) + locationState.currentBounds.south).toFixed(6);
 }
 
 $('#current-location-button').click(function() {
@@ -53,44 +44,30 @@ $('#current-location-button').click(function() {
         lng: position.coords.longitude
       };
 
-      state.currentLocation = pos;
+      locationState.currentLocation = pos;
 
-      settings = {
-				limitBox: {
-					topLeft: {
-						x: state.currentLocation.lat + 0.00053, 
-						y: state.currentLocation.lng - 0.00095
-					},
-					bottomRight: {
-						x: state.currentLocation.lat - 0.00053, 
-						y: state.currentLocation.lng + 0.00095
-					}
-				}
-			};
+			initMap();
+  	})
+  	$('#start-screen').toggleClass('hidden');
+  }
+})
 
-    });
-	}
-  $('#start-screen').toggleClass('hidden');
-  initMap();
-});
+// creates new pokemon and 
+function spawnPokemon() {
+	var pokemon;
+	var pokeNum = Math.floor(Math.random() * (721 - 1)) + 1;
+	var locLat = randomPokeGenX();
+	var locLng = randomPokeGenY();
 
-function initMap() {
-  map = new google.maps.Map(document.getElementById('map'), {
-    zoom: 20,
-    center: state.currentLocation,
-    mapTypeId: 'satellite'
-  });
+	pokemonState.currentWild[pokeNum] = {
+		lat: locLat,
+		lng: locLng
+	};
+}
 
+function showMarkers(map) {
   // Show markers on map
   var iconBase = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/';
-  var icons = {
-    // pokemon: {
-    //   icon: iconBase + 'parking_lot_maps.png'
-    // },
-    // current: {
-    //   icon: iconBase + 'library_maps.png'
-    // },
-  };
 
   function getPokemonIcon(type) {
   	if (type === 'current') {
@@ -137,13 +114,27 @@ function initMap() {
     position: new google.maps.LatLng(randomPokeGenX(), randomPokeGenY()),
     type: 'pokemon'
   }, {
-    position: new google.maps.LatLng(state.currentLocation.lat, state.currentLocation.lng),
+    position: new google.maps.LatLng(locationState.currentLocation.lat, locationState.currentLocation.lng),
     type: 'current'
   }];
 
   for (var i = 0, feature; feature = features[i]; i++) {
     addMarker(feature);
   }
+}
+
+function initMap() {
+  map = new google.maps.Map(document.getElementById('map'), {
+    zoom: 20,
+    center: locationState.currentLocation,
+    mapTypeId: 'satellite'
+  });
+
+  google.maps.event.addListener(map, 'bounds_changed', function() {
+    locationState.currentBounds = map.getBounds().toJSON();
+    showMarkers(map);
+  });
+	
 }
 
 // function handleLocationError(browserHasGeolocation, infoWindow, pos) {
