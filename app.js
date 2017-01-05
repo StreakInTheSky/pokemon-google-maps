@@ -26,6 +26,26 @@ var pokemonState = {
 
 var map;
 
+
+function getUserLocation() {
+  $('#current-location-button').click(function() {
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(position) {
+        var pos = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+
+        locationState.currentLocation = pos;
+
+        initMap();
+      })
+      $('#start-screen').toggleClass('hidden');
+    }
+  })
+}
+
 //randomly generate location of pokemon within window
 function randomPokeGenY() {
 	return (Math.random() * (locationState.currentBounds.east - locationState.currentBounds.west) + locationState.currentBounds.west).toFixed(6);
@@ -35,24 +55,7 @@ function randomPokeGenX() {
 	return (Math.random() * (locationState.currentBounds.north - locationState.currentBounds.south) + locationState.currentBounds.south).toFixed(6);
 }
 
-$('#current-location-button').click(function() {
-
-	if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(function(position) {
-      var pos = {
-        lat: position.coords.latitude,
-        lng: position.coords.longitude
-      };
-
-      locationState.currentLocation = pos;
-
-			initMap();
-  	})
-  	$('#start-screen').toggleClass('hidden');
-  }
-})
-
-// creates new pokemon and 
+// creates new pokemon and add to state
 function spawnPokemon() {
 	var pokemon;
 	var pokeNum = Math.floor(Math.random() * (721 - 1)) + 1;
@@ -69,28 +72,39 @@ function showMarkers(map) {
   // Show markers on map
   var iconBase = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/';
 
-  function getPokemonIcon(type) {
-  	if (type === 'current') {
-  		return { icon: 'https://maps.google.com/mapfiles/kml/shapes/library_maps.png' };
-  	}
-  	var number = Math.floor(Math.random() * (721 - 1)) + 1;
-  	var sprite = iconBase + number + '.png';
-  	var tooltip = getPokemonData(number)
-  	return { icon: sprite, tooltip: tooltip };
+  function getPokemonData(type) {
+    if (type === 'current') {
+      return { icon: 'https://maps.google.com/mapfiles/kml/shapes/library_maps.png' };
+    }
+    var number = Math.floor(Math.random() * (721 - 1)) + 1;
+    var sprite = iconBase + number + '.png';
+    var tooltip = getPokemonInfo(number, neededInfo);
+    return { icon: sprite, tooltip: tooltip };
   }
 
-  function getPokemonData(number) {
-  	return //get crapola
+  function neededInfo(data) {
+    var pokemon = {
+      name: data.name,
+      types: data.types,
+      height: data.height,
+      weight: (data.weight/10).toFixed(1) + 'kg',
+    }
+  }
+
+  function getPokemonInfo(number, callback) {
+    var pokeApiBase = 'http://pokeapi.co/api/v2/pokemon/';
+    $.getJSON(pokeApiBase + number, callback);
   }
 
   function addMarker(feature) {
     var marker = new google.maps.Marker({
       position: feature.position,
-      icon: getPokemonIcon(feature.type).icon,
-     	tooltip: getPokemonIcon(feature.type).tooltip,
+      icon: getPokemonData(feature.type).icon,
+      tooltip: getPokemonData(feature.type).tooltip,
       map: map
     });
   }
+
 
   var features = [{
     position: new google.maps.LatLng(randomPokeGenX(), randomPokeGenY()),
@@ -132,14 +146,9 @@ function initMap() {
 
   google.maps.event.addListener(map, 'bounds_changed', function() {
     locationState.currentBounds = map.getBounds().toJSON();
-    showMarkers(map);
+    // showMarkers(map);
   });
 	
 }
 
-// function handleLocationError(browserHasGeolocation, infoWindow, pos) {
-//   infoWindow.setPosition(pos);
-//   infoWindow.setContent(browserHasGeolocation ?
-//                         'Error: The Geolocation service failed.' :
-//                         'Error: Your browser doesn\'t support geolocation.');
-// }
+$(function(){getUserLocation();});
