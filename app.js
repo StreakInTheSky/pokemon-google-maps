@@ -38,6 +38,13 @@ function getUserLocation() {
 
         locationState.currentLocation = pos;
 
+        pokemonState.currentWild['1'].lat = pos.lat + 0.000031;
+        pokemonState.currentWild['1'].lng = pos.lng + 0.00006;
+        pokemonState.currentWild['4'].lat = pos.lat + 0.00004;
+        pokemonState.currentWild['4'].lng = pos.lng;
+        pokemonState.currentWild['7'].lat = pos.lat + 0.000038;
+        pokemonState.currentWild['7'].lng = pos.lng - 0.00006;
+
         initMap();
       })
       $('#start-screen').toggleClass('hidden');
@@ -66,34 +73,35 @@ function spawnPokemon() {
 		lat: locLat,
 		lng: locLng
 	};
+  if (Object.keys(pokemonState.currentWild).length > 10) {
+    removePokemon();
+  }
   showMarkers(map);
 }
 
 function intervalOfSpawning() {
-  setInterval(spawnPokemon, Math.random() * ((30 * 1000) - (1 * 1000)));
+  setInterval(spawnPokemon, 1000);//Math.random() * ((30 * 1000) - (1 * 1000)));
 }
 
 function removePokemon() {
-  if (pokemonState.currentWild.length > 10) {
-    delete pokemonState.currentWild.indexOf
-  }
+  var pokeNum = Object.keys(pokemonState.currentWild)
+  delete pokemonState.currentWild[pokeNum[0]];
 }
 
-function neededInfo(data) {
-  var pokemon = {
-    name: data.name,
-    types: data.types,
-    height: data.height,
-    weight: (data.weight / 10).toFixed(1) + 'kg',
-    sprite: data.sprites.front_default,
-  }
-  return pokemon;
-}
-
-function getPokemonInfo(number, callback) {
+function getPokemonInfo(number) {
   var pokeApiBase = 'http://pokeapi.co/api/v2/pokemon/';
-  $.getJSON(pokeApiBase + number, callback);
+  $.getJSON(pokeApiBase + number, function(data) {
+    var pokemon = {
+      name: data.name,
+      types: data.types,
+      height: data.height,
+      weight: (data.weight / 10).toFixed(1) + 'kg',
+    }
+    return pokemon;
+  });
 }
+
+
 
 function showMarkers(map) {
   var userMarker = {
@@ -110,7 +118,7 @@ function showMarkers(map) {
   }
 
   addMarker(userMarker);
-
+ 
   $.each(pokemonState.currentWild, function(key) {
     var pokeIconBase = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/';
     var pokemonMarker = {
