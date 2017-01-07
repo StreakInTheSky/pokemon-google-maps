@@ -48,7 +48,6 @@ function getUserLocation() {
         initMap();
       })
       $('#start-screen').toggleClass('hidden');
-      intervalOfSpawning();
     }
   })
 }
@@ -93,7 +92,7 @@ function getPokemonInfo(number) {
   $.getJSON(pokeApiBase + number, function(data) {
     var pokemon = {
       name: data.name,
-      types: data.types,
+      types: data.types, 
       height: data.height,
       weight: (data.weight / 10).toFixed(1) + 'kg',
     }
@@ -102,18 +101,25 @@ function getPokemonInfo(number) {
 }
 
 
-
 function showMarkers(map) {
   var userMarker = {
     position: new google.maps.LatLng(locationState.currentLocation.lat, locationState.currentLocation.lng),
     icon: 'https://maps.google.com/mapfiles/kml/shapes/library_maps.png'
   }
 
+  var infowindow = new google.maps.InfoWindow({
+    content: getPokemonInfo(1)
+  });
+
   function addMarker(feature) {
     var marker = new google.maps.Marker({
       position: feature.position,
       icon: feature.icon,
       map: map
+    });
+
+    marker.addListener('click', function() {
+      infowindow.open(map, marker);
     });
   }
 
