@@ -11,20 +11,23 @@ var pokemonState = {
 		1: {
 			lat: locationState.currentLocation.lat + 0.000031,
 			lng: locationState.currentLocation.lng + 0.00006,
+      info: 'none1'
 		},
 		4: {
 			lat: locationState.currentLocation.lat + 0.00004,
 			lng: locationState.currentLocation.lng,
+      info: 'none4'
 		},
 		7: {
 			lat: locationState.currentLocation.lat + 0.000038,
 			lng: locationState.currentLocation.lng - 0.00006,
+      info: 'none7'
 		},
-	},
-	pokedex: {},
+	}
 }
 
 var map;
+var infowindow;
 
 function getUserLocation() {
   $('#current-location-button').click(function() {
@@ -39,11 +42,11 @@ function getUserLocation() {
         locationState.currentLocation = pos;
 
         pokemonState.currentWild['1'].lat = pos.lat + 0.000031;
-        pokemonState.currentWild['1'].lng = pos.lng + 0.00006;
+        pokemonState.currentWild['1'].lng = pos.lng + 0.00008;
         pokemonState.currentWild['4'].lat = pos.lat + 0.00004;
         pokemonState.currentWild['4'].lng = pos.lng;
         pokemonState.currentWild['7'].lat = pos.lat + 0.000038;
-        pokemonState.currentWild['7'].lng = pos.lng - 0.00006;
+        pokemonState.currentWild['7'].lng = pos.lng - 0.00008;
 
         initMap();
       })
@@ -75,7 +78,7 @@ function spawnPokemon() {
   if (Object.keys(pokemonState.currentWild).length > 10) {
     removePokemon();
   }
-  showMarkers(map);
+  showPokemonMarkers(map);
 }
 
 function intervalOfSpawning() {
@@ -88,52 +91,79 @@ function removePokemon() {
 }
 
 function getPokemonInfo(number) {
-  var pokeApiBase = 'http://pokeapi.co/api/v2/pokemon/';
+  var pokeApiBase = 'https://pokeapi.co/api/v2/pokemon/';
+  var pokemon;
   $.getJSON(pokeApiBase + number, function(data) {
-    var pokemon = {
+    pokemon = {
       name: data.name,
       types: data.types, 
-      height: data.height,
+      height: (data.height / 10).toFixed(1) + 'm',
       weight: (data.weight / 10).toFixed(1) + 'kg',
     }
-    return pokemon;
+    pokemonState.currentWild[number].info = pokemon;
   });
 }
 
+function formatPokemonInfo(key) {
+  var pokemon = pokemonState.currentWild[key].info;
+  var types;
+  if (pokemon.types.length > 1) {
+    types = pokemon.types[0].type.name + ', ' + pokemon.types[1].type.name;
+  } else {
+    types = pokemon.types[0].type.name;
+  }
 
-function showMarkers(map) {
+  return ('<div class="pokemon-info">' +
+    '<p>' + pokemon.name +'</p>' +
+    '<table>' +
+      '<tbody>' +
+        '<tr><td>types:</td><td>' + types +'</td></tr>' +
+        '<tr><td>height:</td><td>' + pokemon.height +'</td></tr>' +
+        '<tr><td>weight:</td><td>' + pokemon.weight +'</td></tr>' +
+      '</tbody>' +
+    '</table>' +
+  '</div>')
+}
+
+function addMarker(feature) {
+  var marker = new google.maps.Marker({
+    position: feature.position,
+    icon: feature.icon,
+    map: map
+  });
+  if (feature.show) {
+    marker.addListener('click', function() {
+      var key = feature.key
+      infowindow = new google.maps.InfoWindow({
+        content: formatPokemonInfo(key)
+      });
+      infowindow.open(map, marker);
+    });
+  }
+}
+
+function showUserMarker(map) {
   var userMarker = {
     position: new google.maps.LatLng(locationState.currentLocation.lat, locationState.currentLocation.lng),
     icon: 'https://maps.google.com/mapfiles/kml/shapes/library_maps.png'
   }
+  addMarker(userMarker); 
+}
 
-  var infowindow = new google.maps.InfoWindow({
-    content: getPokemonInfo(1)
-  });
-
-  function addMarker(feature) {
-    var marker = new google.maps.Marker({
-      position: feature.position,
-      icon: feature.icon,
-      map: map
-    });
-
-    marker.addListener('click', function() {
-      infowindow.open(map, marker);
-    });
-  }
-
-  addMarker(userMarker);
- 
+function showPokemonMarkers() {
   $.each(pokemonState.currentWild, function(key) {
     var pokeIconBase = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/';
     var pokemonMarker = {
       position: new google.maps.LatLng(this.lat, this.lng),
-      icon: pokeIconBase + key + '.png'
+      icon: pokeIconBase + key + '.png',
+      show: true,
+      key: key
     }
     addMarker(pokemonMarker);
+    getPokemonInfo(key);
   })
 }
+
 
 // function showMarkers(map) {
 //   // Show markers on map
@@ -213,9 +243,10 @@ function initMap() {
 
   google.maps.event.addListener(map, 'bounds_changed', function() {
     locationState.currentBounds = map.getBounds().toJSON();
-    showMarkers(map);
+    // locationState.currentLocation = map.getCenter().toJSON();
+    showUserMarker(map);
+    showPokemonMarkers(map);
   });
-	
 }
 
 $(function(){getUserLocation();});
