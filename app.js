@@ -8,7 +8,8 @@ var locationState = {
 
 var pokemonState = {
 	currentWild: {},
-  currentCaught: 0
+  currentCaught: 0,
+  currentMarkers: []
 }
 
 var map;
@@ -43,7 +44,6 @@ function getPokemonInfo(number) {
   });
 }
 
-
 function spawnPokemon(pokeNum, lat, lng) {
   pokemonState.currentWild[pokeNum] = {
     lat: lat,
@@ -54,14 +54,20 @@ function spawnPokemon(pokeNum, lat, lng) {
 
   if (Object.keys(pokemonState.currentWild).length > 10) {
     delete pokemonState.currentWild[pokeNum[0]];
-    showPokemonMarkers(map);
+    showPokemonMarkers();
   } else {
-    showPokemonMarkers(map);
+    showPokemonMarkers();
   }
+  console.log(pokeNum);
 }
 
 function intervalOfSpawning() {
-  setInterval(spawnPokemon(generatePokeNum(), randomPokeGenX(), randomPokeGenY()), Math.random() * 1000);//((30 * 1000) - (1 * 1000)));
+  // setInterval(spawnPokemon(generatePokeNum(), randomPokeGenX(), randomPokeGenY()), 1000);//((30 * 1000) - (1 * 1000)));
+  setInterval(function() {
+    var num = generatePokeNum();
+    var coor = { x: randomPokeGenX(), y: randomPokeGenY() }
+    spawnPokemon(num, coor.x, coor.y);
+  }, Math.random() * ((10 * 1000) - (1 * 1000)));
 }
 
 function formatPokemonInfo(key) {
@@ -90,15 +96,30 @@ function createInfoWindowContent(key) {
          '<div class="catch-pokemon-button"><button class="catch">Catch Pokemon</button></div>';
 }
 
+function makeCaughtList(key) {
+  console.log(key);
+  $('.list-of-caught').append(
+    '<li class="caught-pokemon">' + key + ' - ' + pokemonState.currentWild[key].info.name + '</li>'
+  )
+}
+
 function doWhenPokemonCaught(marker, key) {
   $('.catch-pokemon-button').on('click', 'button', function(){
     if (pokemonState.currentCaught === 0) {
+      makeCaughtList(key);
+      marker.setMap(null);
+      pokemonState.currentWild = {};
+      initMap();
+      pokemonState.currentCaught++;
+      displayHUD();
       intervalOfSpawning();
+    } else {
+      makeCaughtList(key);
+      marker.setMap(null);
+      delete pokemonState.currentWild[key];
+      pokemonState.currentCaught++;
+      displayHUD();
     }
-    marker.setMap(null);
-    delete pokemonState.currentWild[key];
-    pokemonState.currentCaught++;
-    displayHUD();
   })
 }
 
@@ -158,7 +179,6 @@ function getUserLocation() {
         displayHUD();
         showUserMarker(map);
         showPokemonMarkers(map);
-        intervalOfSpawning()
       })
       $('#start-screen').toggleClass('hidden');
       $('.hud').toggleClass('hidden')
@@ -173,7 +193,6 @@ function getUserLocation() {
     displayHUD();
     showUserMarker(map);
     showPokemonMarkers(map);
-    intervalOfSpawning();
     $('#start-screen').toggleClass('hidden');
     $('.hud').toggleClass('hidden')
   })
