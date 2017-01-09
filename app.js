@@ -166,7 +166,6 @@ function showPokemonMarkers() {
 function displayHUD() {
   $('.caught-num').text(pokemonState.currentCaught);
 }
->>>>>>> .merge_file_a10852
 
 function initMap() {
   map = new google.maps.Map(document.getElementById('map'), {
