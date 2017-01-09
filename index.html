@@ -3,16 +3,18 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Pokemon Google Maps</title>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.css">
 	<link rel="stylesheet" href="styles.css">
 </head>
 <body>
 	<main>
 		<div id="start-screen">
 			<h1>Pokemon Google Maps</h1>
-				<div id="locationField">
-	        	<button id="current-location-button">Get current location</button>
-	        	<button id="default-location-button">Use default location</button>
-				</div>
+			<p>Get ready to catch some pokemon! Just select the location you want from the options below</p>
+			<div id="locationField">
+	       <button id="current-location-button">Get my location</button>
+	       <button id="default-location-button">Use default location</button>
+			</div>
 		</div>
 		<div class="hud hidden">
 			<p class="total-caught">Total caught: <span class="caught-num"></span></p>

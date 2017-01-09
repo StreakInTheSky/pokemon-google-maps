@@ -22,11 +22,11 @@ function generatePokeNum() {
 }
 
 function randomPokeGenY() {
-  return (Math.random() * (locationState.currentBounds.east - locationState.currentBounds.west) + locationState.currentBounds.west).toFixed(6);
+  return (Math.random() * ((locationState.currentBounds.east - 0.0001) - (locationState.currentBounds.west - 0.0001)) + (locationState.currentBounds.west - 0.0001)).toFixed(6);
 }
 
 function randomPokeGenX() {
-  return (Math.random() * (locationState.currentBounds.north - locationState.currentBounds.south) + locationState.currentBounds.south).toFixed(6);
+  return (Math.random() * ((locationState.currentBounds.north - 0.0001) - (locationState.currentBounds.south - 0.0001)) + (locationState.currentBounds.south - 0.0001)).toFixed(6);
 }
 
 // creates new pokemon and add to state
@@ -45,29 +45,33 @@ function getPokemonInfo(number) {
 }
 
 function spawnPokemon(pokeNum, lat, lng) {
-  pokemonState.currentWild[pokeNum] = {
-    lat: lat,
-    lng: lng,
+  function createPokemon() {
+    pokemonState.currentWild[pokeNum] = {
+      lat: lat,
+      lng: lng,
+    };
+
+    getPokemonInfo(pokeNum);
+    console.log('pokemon created')
   };
-
-  getPokemonInfo(pokeNum)
-
+  createPokemon();
   if (Object.keys(pokemonState.currentWild).length > 10) {
     delete pokemonState.currentWild[pokeNum[0]];
-    showPokemonMarkers();
+    console.log('pokemon-deleted');
+    createPokemon();
+    showPokemonMarkers()
   } else {
-    showPokemonMarkers();
+    createPokemon();
+    showPokemonMarkers()
   }
-  console.log(pokeNum);
 }
 
 function intervalOfSpawning() {
-  // setInterval(spawnPokemon(generatePokeNum(), randomPokeGenX(), randomPokeGenY()), 1000);//((30 * 1000) - (1 * 1000)));
   setInterval(function() {
     var num = generatePokeNum();
     var coor = { x: randomPokeGenX(), y: randomPokeGenY() }
     spawnPokemon(num, coor.x, coor.y);
-  }, Math.random() * ((10 * 1000) - (1 * 1000)));
+  }, Math.random() * 1000);//((10 * 1000) - (1 * 1000)));
 }
 
 function formatPokemonInfo(key) {
@@ -96,8 +100,7 @@ function createInfoWindowContent(key) {
          '<div class="catch-pokemon-button"><button class="catch">Catch Pokemon</button></div>';
 }
 
-function makeCaughtList(key) {
-  console.log(key);
+function updateCaughtList(key) {
   $('.list-of-caught').append(
     '<li class="caught-pokemon">' + pokemonState.currentWild[key].info.name + '</li>'
   )
@@ -106,16 +109,16 @@ function makeCaughtList(key) {
 function doWhenPokemonCaught(marker, key) {
   $('.catch-pokemon-button').on('click', 'button', function(){
     if (pokemonState.currentCaught === 0) {
-      makeCaughtList(key);
       marker.setMap(null);
+      updateCaughtList(key);
       pokemonState.currentWild = {};
       initMap();
       pokemonState.currentCaught++;
       displayHUD();
       intervalOfSpawning();
     } else {
-      makeCaughtList(key);
       marker.setMap(null);
+      updateCaughtList(key);
       delete pokemonState.currentWild[key];
       pokemonState.currentCaught++;
       displayHUD();
@@ -160,7 +163,40 @@ function showPokemonMarkers() {
   })
 }
 
+function displayHUD() {
+  $('.caught-num').text(pokemonState.currentCaught);
+}
+
+function initMap() {
+  map = new google.maps.Map(document.getElementById('map'), {
+    zoom: 20,
+    center: locationState.currentLocation,
+    mapTypeId: 'satellite',
+    disableDefaultUI: true
+  });
+  
+  infoWindow = new google.maps.InfoWindow;
+
+  google.maps.event.addListener(map, 'bounds_changed', function() {
+    locationState.currentBounds = map.getBounds().toJSON();
+    locationState.currentLocation = map.getCenter().toJSON();
+  });
+}
+
 function getUserLocation() {
+  function startLocation() {
+    spawnPokemon(1, locationState.currentLocation.lat + 0.000031, locationState.currentLocation.lng + 0.00008);
+    spawnPokemon(4, locationState.currentLocation.lat + 0.00004, locationState.currentLocation.lng);
+    spawnPokemon(7, locationState.currentLocation.lat + 0.000038, locationState.currentLocation.lng - 0.00008);
+    
+    initMap();
+    displayHUD();
+    showUserMarker(map);
+    showPokemonMarkers(map);
+    $('#start-screen').toggleClass('hidden');
+    $('.hud').toggleClass('hidden');
+  };
+
   $('#current-location-button').click(function() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(function(position) {
@@ -179,44 +215,16 @@ function getUserLocation() {
         displayHUD();
         showUserMarker(map);
         showPokemonMarkers(map);
-      })
-      $('#start-screen').toggleClass('hidden');
-      $('.hud').toggleClass('hidden')
+        $('#start-screen').addClass('hidden');
+        $('.hud').removeClass('hidden');
+      }, startLocation()
+      );
+    } else {
+      startLocation();
     }
-  })
-  $('#default-location-button').click(function() {
-    spawnPokemon(1, locationState.currentLocation.lat + 0.000031, locationState.currentLocation.lng + 0.00008);
-    spawnPokemon(4, locationState.currentLocation.lat + 0.00004, locationState.currentLocation.lng);
-    spawnPokemon(7, locationState.currentLocation.lat + 0.000038, locationState.currentLocation.lng - 0.00008);
-    
-    initMap();
-    displayHUD();
-    showUserMarker(map);
-    showPokemonMarkers(map);
-    $('#start-screen').toggleClass('hidden');
-    $('.hud').toggleClass('hidden')
-  })
+  });
+
+  $('#default-location-button').click(startLocation);
 }
 
-function displayHUD() {
-  $('.caught-num').text(pokemonState.currentCaught);
-}
-
-function initMap() {
-  map = new google.maps.Map(document.getElementById('map'), {
-    zoom: 20,
-    center: locationState.currentLocation,
-    mapTypeId: 'satellite'
-  });
-  
-  infoWindow = new google.maps.InfoWindow;
-
-  google.maps.event.addListener(map, 'bounds_changed', function() {
-    locationState.currentBounds = map.getBounds().toJSON();
-    locationState.currentLocation = map.getCenter().toJSON();
-  });
-}
-
-$(function(){
-    getUserLocation();
-  });
+$(document).ready(getUserLocation());
