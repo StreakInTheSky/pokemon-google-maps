@@ -99,7 +99,7 @@ function createInfoWindowContent(key) {
 function makeCaughtList(key) {
   console.log(key);
   $('.list-of-caught').append(
-    '<li class="caught-pokemon">' + key + ' - ' + pokemonState.currentWild[key].info.name + '</li>'
+    '<li class="caught-pokemon">' + pokemonState.currentWild[key].info.name + '</li>'
   )
 }
 
