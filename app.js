@@ -22,11 +22,11 @@ function generatePokeNum() {
 }
 
 function randomPokeGenY() {
-  return (Math.random() * ((locationState.currentBounds.east - 0.0001) - (locationState.currentBounds.west - 0.0001)) + (locationState.currentBounds.west - 0.0001)).toFixed(6);
+  return (Math.random() * ((locationState.currentBounds.east - 0.00005) - (locationState.currentBounds.west + 0.00005)) + (locationState.currentBounds.west + 0.00005)).toFixed(6);
 }
 
 function randomPokeGenX() {
-  return (Math.random() * ((locationState.currentBounds.north - 0.0001) - (locationState.currentBounds.south - 0.0001)) + (locationState.currentBounds.south - 0.0001)).toFixed(6);
+  return (Math.random() * ((locationState.currentBounds.north - 0.00012) - (locationState.currentBounds.south)) + (locationState.currentBounds.south)).toFixed(6);
 }
 
 // creates new pokemon and add to state
@@ -52,12 +52,12 @@ function spawnPokemon(pokeNum, lat, lng) {
     };
 
     getPokemonInfo(pokeNum);
-    console.log('pokemon created')
+    // console.log('pokemon created')
   };
   createPokemon();
   if (Object.keys(pokemonState.currentWild).length > 10) {
     delete pokemonState.currentWild[pokeNum[0]];
-    console.log('pokemon-deleted');
+    // console.log('pokemon-deleted');
     createPokemon();
     showPokemonMarkers()
   } else {
@@ -71,7 +71,7 @@ function intervalOfSpawning() {
     var num = generatePokeNum();
     var coor = { x: randomPokeGenX(), y: randomPokeGenY() }
     spawnPokemon(num, coor.x, coor.y);
-  }, Math.random() * 1000);//((10 * 1000) - (1 * 1000)));
+  }, Math.random() * ((10 * 1000) - (1 * 1000)));
 }
 
 function formatPokemonInfo(key) {
@@ -188,6 +188,7 @@ function getUserLocation() {
     spawnPokemon(1, locationState.currentLocation.lat + 0.000031, locationState.currentLocation.lng + 0.00008);
     spawnPokemon(4, locationState.currentLocation.lat + 0.00004, locationState.currentLocation.lng);
     spawnPokemon(7, locationState.currentLocation.lat + 0.000038, locationState.currentLocation.lng - 0.00008);
+
     
     initMap();
     displayHUD();
