@@ -1,6 +1,6 @@
 # Pokemon GOogle Maps Game
 
-Pokemon Google Maps is a simple online game that utilizes the Google Maps API and the PokeAPI. It enables the user to catch pokemon on any location on the map. 
+Pokemon Google Maps is a simple online game that utilizes the Google Maps API and the PokeAPI. It enables the user to catch pokemon on any location on the map.
 
 >Gotta Catch'em All!
 
