@@ -28,3 +28,22 @@ html, body, main {
 .hidden {
   display: none;
 }
+
+.pokemon-name {
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+.info-type {
+  font-weight: bold;
+}
+
+.hud {
+  background-color: rgba(0, 81, 197, .08);
+  position: fixed;
+  top: 0px;
+  right: 0px;
+  padding: 10px;
+  z-index: 35;
+  color: #FFF;
+}

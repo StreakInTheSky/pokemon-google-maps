@@ -8,7 +8,7 @@ var locationState = {
 
 var pokemonState = {
 	currentWild: {},
-  pokedex: []
+  currentCaught: 0
 }
 
 var map;
@@ -61,7 +61,7 @@ function spawnPokemon(pokeNum, lat, lng) {
 }
 
 function intervalOfSpawning() {
-  setInterval(spawnPokemon(generatePokeNum(), randomPokeGenX(), randomPokeGenY()), Math.random() * ((30 * 1000) - (1 * 1000)));
+  setInterval(spawnPokemon(generatePokeNum(), randomPokeGenX(), randomPokeGenY()), Math.random() * 1000);//((30 * 1000) - (1 * 1000)));
 }
 
 function formatPokemonInfo(key) {
@@ -74,12 +74,12 @@ function formatPokemonInfo(key) {
   }
 
   return ('<div class="pokemon-info">' +
-    '<p>' + pokemon.name +'</p>' +
+    '<p class="pokemon-name">' + pokemon.name +'</p>' +
     '<table>' +
       '<tbody>' +
-        '<tr><td>types:</td><td>' + types +'</td></tr>' +
-        '<tr><td>height:</td><td>' + pokemon.height +'</td></tr>' +
-        '<tr><td>weight:</td><td>' + pokemon.weight +'</td></tr>' +
+        '<tr><td class="info-type">types:</td><td>' + types +'</td></tr>' +
+        '<tr><td class="info-type">height:</td><td>' + pokemon.height +'</td></tr>' +
+        '<tr><td class="info-type">weight:</td><td>' + pokemon.weight +'</td></tr>' +
       '</tbody>' +
     '</table>' +
   '</div>')
@@ -87,7 +87,19 @@ function formatPokemonInfo(key) {
 
 function createInfoWindowContent(key) {
   return formatPokemonInfo(key) + 
-         '<div class="catch-pokemon-button"><button>Catch Pokemon</button></div>';
+         '<div class="catch-pokemon-button"><button class="catch">Catch Pokemon</button></div>';
+}
+
+function doWhenPokemonCaught(marker, key) {
+  $('.catch-pokemon-button').on('click', 'button', function(){
+    if (pokemonState.currentCaught === 0) {
+      intervalOfSpawning();
+    }
+    marker.setMap(null);
+    delete pokemonState.currentWild[key];
+    pokemonState.currentCaught++;
+    displayHUD();
+  })
 }
 
 function addMarker(feature) {
@@ -101,6 +113,7 @@ function addMarker(feature) {
       var key = feature.key
       infoWindow.setContent(createInfoWindowContent(key));
       infoWindow.open(map, marker);
+      doWhenPokemonCaught(marker, key);
     });
   }
 }
@@ -142,21 +155,32 @@ function getUserLocation() {
         spawnPokemon(7, locationState.currentLocation.lat + 0.000038, locationState.currentLocation.lng - 0.00008);
 
         initMap();
+        displayHUD();
         showUserMarker(map);
         showPokemonMarkers(map);
+        intervalOfSpawning()
       })
       $('#start-screen').toggleClass('hidden');
+      $('.hud').toggleClass('hidden')
     }
   })
   $('#default-location-button').click(function() {
     spawnPokemon(1, locationState.currentLocation.lat + 0.000031, locationState.currentLocation.lng + 0.00008);
     spawnPokemon(4, locationState.currentLocation.lat + 0.00004, locationState.currentLocation.lng);
     spawnPokemon(7, locationState.currentLocation.lat + 0.000038, locationState.currentLocation.lng - 0.00008);
+    
     initMap();
+    displayHUD();
     showUserMarker(map);
     showPokemonMarkers(map);
+    intervalOfSpawning();
     $('#start-screen').toggleClass('hidden');
+    $('.hud').toggleClass('hidden')
   })
+}
+
+function displayHUD() {
+  $('.caught-num').text(pokemonState.currentCaught);
 }
 
 function initMap() {
@@ -174,4 +198,6 @@ function initMap() {
   });
 }
 
-$(function(){getUserLocation();});
+$(function(){
+    getUserLocation();
+  });
