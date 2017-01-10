@@ -17,7 +17,7 @@ html, body, main {
 #start-screen {
   position: fixed;
   z-index: 10;
-   background-color: rgba(0, 81, 197, .7);
+  background-color: rgba(0, 81, 197, .7);
   text-align: center;
   color: #FFF;
 }
@@ -35,13 +35,16 @@ html, body, main {
   left: 50%;
   top: 50%;
   width: 400px;
-  height: 200px;
-  margin-left: -200px;
+  margin-left: -240px;
   margin-top: -200px;
   border-radius: 20px;
-  padding: 50px;
-  padding-top: 50px;
+  padding: 40px;
 }
+}
+
+#start-screen h1 {
+  margin: 0;
+  margin-bottom: 10px;
 }
 
 .hidden {
