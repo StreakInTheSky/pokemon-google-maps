@@ -9,7 +9,7 @@ var locationState = {
 var pokemonState = {
 	currentWild: {},
   currentCaught: 0,
-  currentMarkers: []
+  currentMarkers: {}
 }
 
 var map;
@@ -56,9 +56,11 @@ function spawnPokemon(pokeNum, lat, lng) {
 			showPokemonMarker(pokeNum);
 		});
   };
-
-  if (Object.keys(pokemonState.currentWild).length > 10) {
-    delete pokemonState.currentWild[pokeNum[0]];
+	var pokemonList = Object.keys(pokemonState.currentWild)
+  if (pokemonList.length > 15) {
+		var randomPokemon = pokemonList[Math.floor(Math.random() * 16)]
+    delete pokemonState.currentWild[randomPokemon];
+		deleteMarker(randomPokemon)
 	}
 
   createPokemon();
@@ -122,7 +124,7 @@ function doWhenPokemonCaught(marker, key) {
     } else {
 			console.log('Marker to delete:', marker);
 
-      marker.setMap(null); // Should delete the marker here!
+      deleteMarker(key); // Should delete the marker here!
       updateCaughtList(key);
       delete pokemonState.currentWild[key];
       pokemonState.currentCaught++;
@@ -136,16 +138,25 @@ function doWhenPokemonCaught(marker, key) {
 
 // Adds markers to map
 
+function deleteMarker(pokeNum) {
+	var marker = pokemonState.currentMarkers[pokeNum];
+	marker.setMap(null)
+	delete pokemonState.currentMarkers[pokeNum]
+}
+
 function addMarker(feature) {
   var marker = new google.maps.Marker({
     position: feature.position,
     icon: feature.icon,
-    map: map
+    map: map,
+		id: null
   });
   if (feature.pokemon) {
-		pokemonState.currentMarkers.push([marker, feature.key])
+		var key = feature.key
+		console.log(marker)
+		marker.id = key
+		pokemonState.currentMarkers[key] = marker;
     marker.addListener('click', function() {
-      var key = feature.key
       infoWindow.setContent(createInfoWindowContent(key));
       infoWindow.open(map, marker);
 
