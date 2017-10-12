@@ -65,6 +65,10 @@ html, body, main {
   color: rgba(0,50,190,0.7);
 }
 
+.smaller {
+  font-size: .8em;  
+}
+
 .pokemon-name {
   font-weight: bold;
   text-transform: capitalize;
