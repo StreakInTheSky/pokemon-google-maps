@@ -57,7 +57,7 @@ function spawnPokemon(pokeNum, lat, lng) {
   };
 	var pokemonList = Object.keys(pokemonState.currentWild)
   if (pokemonList.length > 10) {
-		var randomPokemon = pokemonList[Math.floor(Math.random() * 11)]
+		var randomPokemon = pokemonList[Math.floor(Math.random() * 9)]
     delete pokemonState.currentWild[randomPokemon];
 		deleteMarker(randomPokemon)
 	}
@@ -138,16 +138,14 @@ function deleteMarker(pokeNum) {
 	delete pokemonState.currentMarkers[pokeNum]
 }
 
-function addMarker(feature) {
+function addMarker(icon) {
   var marker = new google.maps.Marker({
-    position: feature.position,
-    icon: feature.icon,
-    map: map,
-		id: null
+    position: icon.position,
+    icon: icon.icon,
+    map: map
   });
-  if (feature.pokemon) {
-		var key = feature.key
-		marker.id = key
+  if (icon.pokemon) {
+		var key = icon.key;
 		pokemonState.currentMarkers[key] = marker;
     marker.addListener('click', function() {
       infoWindow.setContent(createInfoWindowContent(key));
@@ -212,9 +210,7 @@ function getUserLocation() {
     spawnPokemon(1, locationState.currentLocation.lat + 0.000031, locationState.currentLocation.lng + 0.00008);
     spawnPokemon(4, locationState.currentLocation.lat + 0.00004, locationState.currentLocation.lng);
     spawnPokemon(7, locationState.currentLocation.lat + 0.000038, locationState.currentLocation.lng - 0.00008);
-		// Right now, these may or may not be finished before next code runs!
 
-    // initMap();
     displayHUD();
     showUserMarker();
 		$('#start-screen').toggleClass('hidden');
